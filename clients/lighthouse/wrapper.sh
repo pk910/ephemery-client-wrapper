@@ -21,8 +21,4 @@ start_client() {
     lighthouse.bin $client_args
 }
 
-reset_client() {
-    rm -rf $client_datadir/*
-}
-
-ephemery_wrapper "lighthouse.bin" "$client_datadir" "reset_client" "start_client"
+ephemery_wrapper "lighthouse.bin" "$client_datadir" "" "start_client"

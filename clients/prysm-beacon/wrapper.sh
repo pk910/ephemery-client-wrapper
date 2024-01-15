@@ -21,8 +21,4 @@ start_client() {
     /app/cmd/beacon-chain/beacon-chain $client_args
 }
 
-reset_client() {
-    rm -rf $client_datadir/*
-}
-
-ephemery_wrapper "beacon-chain" "$client_datadir" "reset_client" "start_client"
+ephemery_wrapper "beacon-chain" "$client_datadir" "" "start_client"

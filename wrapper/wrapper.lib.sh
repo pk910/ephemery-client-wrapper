@@ -35,8 +35,6 @@ ephemery_wrapper() {
     $start_fn &
 
     # wait for next iteration
-    
-
     while true
     do
       sleep_time=10

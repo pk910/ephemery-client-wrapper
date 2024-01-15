@@ -21,8 +21,4 @@ start_client() {
     /opt/teku/bin/teku $client_args
 }
 
-reset_client() {
-    rm -rf $client_datadir/*
-}
-
-ephemery_wrapper "teku" "$client_datadir" "reset_client" "start_client"
+ephemery_wrapper "teku" "$client_datadir" "" "start_client"
