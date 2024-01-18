@@ -18,8 +18,8 @@ done
 source /wrapper/wrapper.lib.sh
 
 start_client() {
-    source $testnet_dir/retention.vars
-    /nethermind/nethermind $client_args
+    source $testnet_dir/nodevars_env.txt
+    /nethermind/nethermind $client_args --Init.ChainSpecPath=$testnet_dir/chainspec.json --Discovery.Bootnodes=$BOOTNODE_ENODE_LIST
 }
 
 ephemery_wrapper "nethermind" "$client_datadir" "" "start_client"

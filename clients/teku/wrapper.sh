@@ -2,7 +2,7 @@
 
 client_datadir="~/.local/share/teku"
 
-client_args="$@"
+client_args=("$@")
 while [[ $# -gt 0 ]]; do
     case $1 in
     --data-path=*)
@@ -18,7 +18,28 @@ done
 source /wrapper/wrapper.lib.sh
 
 start_client() {
-    /opt/teku/bin/teku $client_args
+    source $testnet_dir/nodevars_env.txt
+
+    ephemery_args=""
+    if [ -z "$(echo "${client_args[@]}" | grep "network")" ]; then
+        ephemery_args="$ephemery_args --network=$testnet_dir/config.yaml"
+    fi
+    
+    case "$(echo "${client_args[0]}")" in
+        validator-client)
+            ;;
+        *)
+            if [ -z "$(echo "${client_args[@]}" | grep "genesis-state")" ]; then
+                ephemery_args="$ephemery_args --genesis-state=$testnet_dir/genesis.ssz"
+            fi
+            if [ -z "$(echo "${client_args[@]}" | grep "p2p-discovery-bootnodes")" ]; then
+                ephemery_args="$ephemery_args --p2p-discovery-bootnodes=$BOOTNODE_ENR_LIST"
+            fi
+            ;;
+    esac
+
+    echo "args: ${client_args[@]} $ephemery_args"
+    /opt/teku/bin/teku "${client_args[@]}" $ephemery_args
 }
 
 reset_client() {
@@ -28,4 +49,4 @@ reset_client() {
     fi
 }
 
-ephemery_wrapper "teku" "$client_datadir" "reset_client" "start_client"
+ephemery_wrapper "java" "$client_datadir" "reset_client" "start_client"

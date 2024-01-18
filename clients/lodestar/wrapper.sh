@@ -2,7 +2,7 @@
 
 client_datadir="~/.local/share/lodestar"
 
-client_args="$@"
+client_args=("$@")
 while [[ $# -gt 0 ]]; do
     case $1 in
     --dataDir=*)
@@ -18,8 +18,27 @@ done
 source /wrapper/wrapper.lib.sh
 
 start_client() {
+    source $testnet_dir/nodevars_env.txt
+
+    ephemery_args=""
+    if [ -z "$(echo "${client_args[@]}" | grep "paramsFile")" ]; then
+        ephemery_args="$ephemery_args --paramsFile=$testnet_dir/config.yaml"
+    fi
+    
+    case "$(echo "${client_args[0]}")" in
+        beacon)
+            if [ -z "$(echo "${client_args[@]}" | grep "genesisStateFile")" ]; then
+                ephemery_args="$ephemery_args --genesisStateFile=$testnet_dir/genesis.ssz"
+            fi
+            if [ -z "$(echo "${client_args[@]}" | grep "bootnodes")" ]; then
+                ephemery_args="$ephemery_args --bootnodes=$BOOTNODE_ENR_LIST"
+            fi
+            ;;
+    esac
+
+    echo "args: ${client_args[@]} $ephemery_args"
     cd /usr/app
-    node ./packages/cli/bin/lodestar $client_args
+    node ./packages/cli/bin/lodestar "${client_args[@]}" $ephemery_args
 }
 
 reset_client() {

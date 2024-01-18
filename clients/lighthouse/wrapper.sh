@@ -2,7 +2,7 @@
 
 client_datadir="~/.lighthouse"
 
-client_args="$@"
+client_args=("$@")
 while [[ $# -gt 0 ]]; do
     case $1 in
     --datadir=*)
@@ -18,7 +18,23 @@ done
 source /wrapper/wrapper.lib.sh
 
 start_client() {
-    lighthouse.bin $client_args
+    source $testnet_dir/nodevars_env.txt
+
+    ephemery_args=""
+    if [ -z "$(echo "${client_args[@]}" | grep "testnet-dir")" ]; then
+        ephemery_args="$ephemery_args --testnet-dir=$testnet_dir"
+    fi
+    
+    case "$(echo "$client_args[0]")" in
+        b|bn|beacon|beacon_node)
+            if [ -z "$(echo "${client_args[@]}" | grep "boot-nodes")" ]; then
+                ephemery_args="$ephemery_args --boot-nodes=$BOOTNODE_ENR_LIST"
+            fi
+            ;;
+    esac
+
+    echo "args: ${client_args[@]} $ephemery_args"
+    lighthouse.bin "${client_args[@]}" $ephemery_args
 }
 
 reset_client() {

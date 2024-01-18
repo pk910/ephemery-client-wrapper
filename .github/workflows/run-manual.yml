@@ -1,42 +1,25 @@
-name: Run scheduled build
+name: Run manual build
 
 on:
   workflow_dispatch:
-  schedule:
-  - cron: '0 */4 * * *'
+    inputs:
+      client:
+        description: 'Client to build'
+        default: ""
+        type: string
+      version:
+        description: 'Client version to build'
+        default: ""
+        type: string
 
 concurrency:
   group: "scheduled-build"
   cancel-in-progress: false
 
 jobs:
-  get_clients:
-    name: "Load clients.yaml"
-    runs-on: ubuntu-latest
-    outputs:
-      client_configs: ${{ steps.clients.outputs.client_configs }}
-    steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
-    - name: "Load client configurations from clients.yaml"
-      id: clients
-      shell: bash
-      run: |
-        clients_file="clients.yaml"
-
-        client_configs="$(cat $clients_file | yq -o json | jq -c)"
-        echo "client_configs<<EOF" >> $GITHUB_OUTPUT
-        echo "$client_configs" >> $GITHUB_OUTPUT
-        echo "$(echo "$client_configs" | jq)"
-        echo "EOF" >> $GITHUB_OUTPUT
 
   run_client_builds:
-    needs: get_clients
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        config: ${{ fromJson(needs.get_clients.outputs.client_configs) }}
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
@@ -46,25 +29,41 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     
+    - name: "Load client configuration from clients.yaml"
+      id: client
+      shell: bash
+      run: |
+        clients_file="clients.yaml"
+
+        client_configs="$(cat $clients_file | yq -o json | jq -c)"
+        client_config="$(echo "$client_configs" | jq -c ".[] | select(.client == \"${{ inputs.client }}\")")"
+
+        echo "repository=$(echo "$client_config" | jq -r ".repository")" >> $GITHUB_OUTPUT
+        echo "sourceImage=$(echo "$client_config" | jq -r ".sourceImage")" >> $GITHUB_OUTPUT
+        echo "targetImage=$(echo "$client_config" | jq -r ".targetImage")" >> $GITHUB_OUTPUT
+        echo "platform=$(echo "$client_config" | jq -r ".platform")" >> $GITHUB_OUTPUT
     - name: Check latest release
       id: check
       run: |
-        client_repo="${{ matrix.config.repository }}"
+        client_repo="${{ steps.client.outputs.repository }}"
 
-        client_release="$(curl --silent "https://api.github.com/repos/$client_repo/releases/latest" | jq -r .tag_name)"
+        client_release="${{ inputs.version }}"
+        if [ -z "$client_release" ]; then
+          client_release="$(curl --silent "https://api.github.com/repos/$client_repo/releases/latest" | jq -r .tag_name)"
+        fi
         echo "latest release: $client_release"
         if [ -z "$client_release" ]; then
           exit
         fi
 
-        source_image="${{ matrix.config.sourceImage }}:$client_release"
+        source_image="${{ steps.client.outputs.sourceImage }}:$client_release"
         echo "check source image: $source_image"
         if [ -z "$(docker manifest inspect $source_image | grep "schemaVersion")" ]; then
           echo "source image not found!"
           exit
         fi
 
-        target_image="${{ matrix.config.targetImage }}:$client_release"
+        target_image="${{ steps.client.outputs.targetImage }}:$client_release"
         echo "check target image: $target_image"
         if ! [ -z "$(docker manifest inspect $target_image | grep "schemaVersion")" ]; then
           echo "target image already exists!"
@@ -88,7 +87,7 @@ jobs:
     - name: Rewrite Dockerfile for wrapper image
       if: ${{ steps.check.outputs.need_build == 'true' }}
       run: |
-        client="${{ matrix.config.client }}"
+        client="${{ inputs.client }}"
 
         if ! [ -d ./clients/$client ]; then
           echo "client folder not found"
@@ -103,9 +102,8 @@ jobs:
     - name: "Build docker image"
       if: ${{ steps.check.outputs.need_build == 'true' }}
       run: |
-        docker buildx build . --file ./clients/${{ matrix.config.client }}/Dockerfile \
-          --platform ${{ matrix.config.platform }} \
+        docker buildx build . --file ./clients/${{ inputs.client }}/Dockerfile \
+          --platform ${{ steps.client.outputs.platform }} \
           --tag ${{ steps.check.outputs.target_image }} \
-          --tag ${{ matrix.config.targetImage }}:latest \
           --push
 

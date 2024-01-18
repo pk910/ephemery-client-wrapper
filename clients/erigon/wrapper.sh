@@ -2,7 +2,7 @@
 
 client_datadir="~/.ethereum"
 
-client_args="$@"
+client_args=("$@")
 while [[ $# -gt 0 ]]; do
     case $1 in
     --datadir=*)
@@ -18,8 +18,18 @@ done
 source /wrapper/wrapper.lib.sh
 
 start_client() {
-    source $testnet_dir/retention.vars
-    erigon $client_args --networkid=$CHAIN_ID
+    source $testnet_dir/nodevars_env.txt
+
+    ephemery_args=""
+    if [ -z "$(echo "${client_args[@]}" | grep "networkid")" ]; then
+        ephemery_args="$ephemery_args --networkid=$CHAIN_ID"
+    fi
+    if [ -z "$(echo "${client_args[@]}" | grep "chain")" ]; then
+        ephemery_args="$ephemery_args --chain=dev"
+    fi
+
+    echo "args: ${client_args[@]} $ephemery_args"
+    erigon "${client_args[@]}" $ephemery_args
 }
 
 reset_client() {

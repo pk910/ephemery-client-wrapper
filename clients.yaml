@@ -5,21 +5,25 @@
   repository: hyperledger/besu
   sourceImage: hyperledger/besu
   targetImage: pk910/ephemery-besu
+  platform: linux/amd64,linux/arm64
 
 - client: erigon
   repository: ledgerwatch/erigon
   sourceImage: thorax/erigon
   targetImage: pk910/ephemery-erigon
+  platform: linux/amd64
 
 - client: geth
   repository: ethereum/go-ethereum
   sourceImage: ethereum/client-go
   targetImage: pk910/ephemery-geth
+  platform: linux/amd64,linux/arm64
 
 - client: nethermind
   repository: nethermindeth/nethermind
   sourceImage: nethermind/nethermind
   targetImage: pk910/ephemery-nethermind
+  platform: linux/amd64,linux/arm64
 
 # CL Clients
 
@@ -27,22 +31,27 @@
   repository: sigp/lighthouse
   sourceImage: sigp/lighthouse
   targetImage: pk910/ephemery-lighthouse
+  platform: linux/amd64,linux/arm64
 
 - client: lodestar
   repository: chainsafe/lodestar
   sourceImage: chainsafe/lodestar
   targetImage: pk910/ephemery-lodestar
+  platform: linux/amd64,linux/arm64
 
 - client: prysm-beacon
   repository: prysmaticlabs/prysm
   sourceImage: ethpandaops/prysm
   targetImage: pk910/ephemery-prysm-beacon
+  platform: linux/amd64,linux/arm64
 - client: prysm-validator
   repository: prysmaticlabs/prysm
   sourceImage: ethpandaops/prysm
   targetImage: pk910/ephemery-prysm-validator
+  platform: linux/amd64,linux/arm64
 
 - client: teku
   repository: consensys/teku
   sourceImage: consensys/teku
   targetImage: pk910/ephemery-teku
+  platform: linux/amd64,linux/arm64

@@ -17,14 +17,14 @@ ephemery_wrapper() {
     # download latest genesis
     ensure_latest_config
     if [ ! -f $testnet_dir/retention.vars ]; then
-      sleep 10
+      sleep 60
       continue
     fi
 
     source $testnet_dir/retention.vars
     testnet_timeout=$(expr $GENESIS_TIMESTAMP + $GENESIS_RESET_INTERVAL - 300)
     if [ $testnet_timeout -le $(date +%s) ]; then
-      sleep 10
+      sleep 60
       continue
     fi
 
