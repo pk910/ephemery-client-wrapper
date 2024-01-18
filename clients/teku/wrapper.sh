@@ -21,4 +21,11 @@ start_client() {
     /opt/teku/bin/teku $client_args
 }
 
-ephemery_wrapper "teku" "$client_datadir" "" "start_client"
+reset_client() {
+    ls -A1 $client_datadir/ | grep -E -v "validator" | xargs rm -rf
+    if [ -d $client_datadir/validator/slashprotection ]; then
+        rm -rf $client_datadir/validator/slashprotection
+    fi
+}
+
+ephemery_wrapper "teku" "$client_datadir" "reset_client" "start_client"

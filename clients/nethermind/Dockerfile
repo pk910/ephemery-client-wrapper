@@ -1,4 +1,4 @@
-FROM sigp/lighthouse:latest
+FROM nethermind/nethermind:latest
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
   curl \
@@ -6,8 +6,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 RUN mkdir /ephemery_config && chmod 777 /ephemery_config
-RUN mv /usr/local/bin/lighthouse /usr/local/bin/lighthouse.bin
-RUN ln -s /wrapper/wrapper.sh /usr/local/bin/lighthouse
 
 WORKDIR /wrapper
-COPY wrapper/wrapper.lib.sh clients/lighthouse/wrapper.sh /wrapper/
+COPY wrapper/wrapper.lib.sh clients/nethermind/wrapper.sh /wrapper/
+EXPOSE 8545 8551 30303
+ENTRYPOINT ["./wrapper.sh"]

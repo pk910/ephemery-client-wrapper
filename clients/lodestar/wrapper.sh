@@ -1,14 +1,14 @@
 #!/bin/bash
 
-client_datadir="~/.lighthouse"
+client_datadir="~/.local/share/lodestar"
 
 client_args="$@"
 while [[ $# -gt 0 ]]; do
     case $1 in
-    --datadir=*)
+    --dataDir=*)
         client_datadir="${1#*=}"
         ;;
-    --datadir)
+    --dataDir)
         client_datadir="${2}"
         ;;
     esac
@@ -18,14 +18,12 @@ done
 source /wrapper/wrapper.lib.sh
 
 start_client() {
-    lighthouse.bin $client_args
+    cd /usr/app
+    node ./packages/cli/bin/lodestar $client_args
 }
 
 reset_client() {
     ls -A1 $client_datadir/ | grep -E -v "keys|secrets" | xargs rm -rf
-    if [ -f $client_datadir/keys/slashing_protection.sqlite ]; then
-        rm $client_datadir/keys/slashing_protection.sqlite
-    fi
 }
 
-ephemery_wrapper "lighthouse.bin" "$client_datadir" "" "start_client"
+ephemery_wrapper "node" "$client_datadir" "reset_client" "start_client"

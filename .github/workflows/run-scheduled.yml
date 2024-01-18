@@ -1,0 +1,128 @@
+name: Run scheduled build
+
+on:
+  workflow_dispatch:
+  #schedule:
+  #- cron: '0 */4 * * *'
+
+concurrency:
+  group: "scheduled-build"
+  cancel-in-progress: false
+
+jobs:
+  get_clients:
+    name: "Load clients.yaml"
+    runs-on: ubuntu-latest
+    outputs:
+      client_configs: ${{ steps.clients.outputs.client_configs }}
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+    - name: "Load client configurations from clients.yaml"
+      id: clients
+      shell: bash
+      run: |
+        clients_file="clients.yaml"
+
+        client_configs="$(cat $clients_file | yq -o json | jq -c)"
+        echo "client_configs<<EOF" >> $GITHUB_OUTPUT
+        echo "$client_configs" >> $GITHUB_OUTPUT
+        echo "$(echo "$client_configs" | jq)"
+        echo "EOF" >> $GITHUB_OUTPUT
+
+  run_client_builds:
+    needs: get_clients
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        config: ${{ fromJson(needs.get_clients.outputs.client_configs) }}
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    
+    - name: Check latest release
+      id: check
+      run: |
+        client_repo="${{ matrix.config.repository }}"
+
+        client_release="$(curl --silent "https://api.github.com/repos/$client_repo/releases/latest" | jq -r .tag_name)"
+        echo "latest release: $client_release"
+        if [ -z "$client_release" ]; then
+          exit
+        fi
+
+        source_image="${{ matrix.config.sourceImage }}:$client_release"
+        echo "check source image: $source_image"
+        if [ -z "$(docker manifest inspect $source_image | grep "schemaVersion")" ]; then
+          echo "source image not found!"
+          exit
+        fi
+
+        target_image="${{ matrix.config.targetImage }}:$client_release"
+        echo "check target image: $target_image"
+        if ! [ -z "$(docker manifest inspect $target_image | grep "schemaVersion")" ]; then
+          echo "target image already exists!"
+          exit
+        fi
+
+        echo "client_release=$(echo "$client_release")" >> $GITHUB_OUTPUT
+        echo "source_image=$(echo "$source_image")" >> $GITHUB_OUTPUT
+        echo "target_image=$(echo "$target_image")" >> $GITHUB_OUTPUT
+        echo "need_build=true" >> $GITHUB_OUTPUT
+    
+    - name: Setup cross build dependencies
+      if: ${{ steps.check.outputs.need_build == 'true' }}
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install gcc-aarch64-linux-gnu
+    - name: Setup Docker Buildx
+      if: ${{ steps.check.outputs.need_build == 'true' }}
+      uses: docker/setup-buildx-action@v2
+
+    - name: Rewrite Dockerfile for wrapper image
+      if: ${{ steps.check.outputs.need_build == 'true' }}
+      run: |
+        client="${{ matrix.config.client }}"
+
+        if ! [ -d ./clients/$client ]; then
+          echo "client folder not found"
+          exit 1
+        fi
+
+        # rewrite Dockerfile
+        mv ./clients/$client/Dockerfile ./clients/$client/Dockerfile.org
+        echo "FROM ${{ steps.check.outputs.source_image }}" > ./clients/$client/Dockerfile
+        cat ./clients/$client/Dockerfile.org | grep -E -v "^FROM" >> ./clients/$client/Dockerfile
+
+    - name: "Build docker image: amd64"
+      if: ${{ steps.check.outputs.need_build == 'true' }}
+      run: |
+        # build wrapper image
+        docker build . --file ./clients/${{ matrix.config.client }}/Dockerfile \
+          --tag ${{ steps.check.outputs.target_image }}-amd64
+    
+    - name: "Build docker image: arm64"
+      if: ${{ steps.check.outputs.need_build == 'true' }}
+      run: |
+        docker build . --file ./clients/${{ matrix.config.client }}/Dockerfile \
+          --platform=linux/arm64
+          --tag ${{ steps.check.outputs.target_image }}-arm64
+    
+    - name: Build multiarch manifest
+      if: ${{ steps.check.outputs.need_build == 'true' }}
+      run: |
+        docker manifest create ${{ steps.check.outputs.target_image }} \
+        --amend ${{ steps.check.outputs.target_image }}-amd64 \
+        --amend ${{ steps.check.outputs.target_image }}-arm64
+    
+    - name: Push multiarch manifest
+      if: ${{ steps.check.outputs.need_build == 'true' }}
+      run: |
+        docker manifest push ${{ steps.check.outputs.target_image }}
+
