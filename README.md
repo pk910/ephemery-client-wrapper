@@ -28,7 +28,41 @@ They should work exactly the same way as mainnet nodes, but connect to the ephem
 | Client | Image | Tested |
 |--------|-------|---------------------|
 | Lighthouse | [pk910/ephemery-lighthouse](https://hub.docker.com/r/pk910/ephemery-lighthouse) | yes |
-| Lodestar | [pk910/ephemery-lodestar](https://hub.docker.com/r/pk910/ephemery-lodestar) |  |
+| Lodestar | [pk910/ephemery-lodestar](https://hub.docker.com/r/pk910/ephemery-lodestar) | yes |
 | Prysm   | [pk910/ephemery-prysm-beacon](https://hub.docker.com/r/pk910/ephemery-prysm-beacon) / [pk910/ephemery-prysm-validator](https://hub.docker.com/r/pk910/ephemery-prysm-validator) |  |
 | Teku | [pk910/ephemery-teku](https://hub.docker.com/r/pk910/ephemery-teku) | yes |
 
+## Examples
+
+The following examples demonstrate how to use the ephemery client images to spin up ephemery nodes.
+You always need to run a EL & CL client. 
+
+The ephemery images are designed to work exactly the same way as the official mainnet images work.
+If you want to switch over to mainnet, you litterally just need to change the image name to use the official client image.
+All ephemery specific arguments are appended automatically by the wrapper script.
+
+### Prerequisites
+
+```
+# generate jwt secret
+echo -n 0x$(openssl rand -hex 32 | tr -d "\n") > ./jwtsecret
+```
+
+### Execution Clients
+
+**Geth**:\
+`docker run --pull always -v $(pwd)/jwtsecret:/execution-auth.jwt:ro -v $(pwd)/el:/data -p 30303:30303 -p 8545:8545 -p 8551:8551 -it pk910/ephemery-geth --datadir=/data --http --http.addr=0.0.0.0 --http.port=8545 --authrpc.addr=0.0.0.0 --authrpc.port=8551 --authrpc.vhosts=* --authrpc.jwtsecret=/execution-auth.jwt`
+
+**Reth**:\
+`docker run --pull always -v $(pwd)/jwtsecret:/execution-auth.jwt:ro -v $(pwd)/el:/data -p 30303:30303 -p 8545:8545 -p 8551:8551 -it pk910/ephemery-reth --datadir=/data --http --http.addr=0.0.0.0 --http.port=8545 --authrpc.addr=0.0.0.0 --authrpc.port=8551 --authrpc.vhosts=* --authrpc.jwtsecret=/execution-auth.jwt`
+
+### Consensus Clients
+
+**Lighthouse**:\
+`docker run --pull always -v $(pwd)/jwt:/execution-auth.jwt:ro -v $(pwd)/cl:/data -p 9000:9000 -p 5052:5052 -it pk910/ephemery-lighthouse lighthouse bn --datadir=/data --http --http-address=0.0.0.0 --http-port=5052 --execution-endpoint=http://172.17.0.1:8551 --execution-jwt=/execution-auth.jwt`
+
+**Lodestar**:\
+`docker run --pull always -v $(pwd)/jwt:/execution-auth.jwt:ro -v $(pwd)/cl:/data -p 9000:9000 -p 5052:5052 -it pk910/ephemery-lodestar beacon --dataDir=/data --rest --rest.address=0.0.0.0 --rest.namespace="*" --rest.port=5052 --execution.urls=http://172.17.0.1:8551 --jwt-secret=/execution-auth.jwt`
+
+**Teku**:\
+`docker run --pull always -v $(pwd)/jwt:/execution-auth.jwt:ro -v $(pwd)/cl:/data -p 9000:9000 -p 5052:5052 -it pk910/ephemery-teku --data-path=/data --rest-api-enabled --rest-api-interface=0.0.0.0 --rest-api-port=5052 --ee-endpoint=http://172.17.0.1:8551 --ee-jwt-secret-file=/execution-auth.jwt --ignore-weak-subjectivity-period-enabled`
