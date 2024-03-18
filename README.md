@@ -21,6 +21,7 @@ They should work exactly the same way as mainnet nodes, but connect to the ephem
 | Erigon | [pk910/ephemery-erigon](https://hub.docker.com/r/pk910/ephemery-erigon) |  |
 | Geth   | [pk910/ephemery-geth](https://hub.docker.com/r/pk910/ephemery-geth) | yes |
 | Nethermind | [pk910/ephemery-nethermind](https://hub.docker.com/r/pk910/ephemery-nethermind) |  |
+| Reth | [pk910/ephemery-reth](https://hub.docker.com/r/pk910/ephemery-reth) | yes |
 
 ### Consensus Clients
 

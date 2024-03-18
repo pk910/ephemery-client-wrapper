@@ -17,13 +17,15 @@ ephemery_wrapper() {
     # download latest genesis
     ensure_latest_config
     if [ ! -f $testnet_dir/retention.vars ]; then
+      echo "[EphemeryWrapper] ephemery genesis is invalid - retrying in 60sec..."
       sleep 60
       continue
     fi
 
     source $testnet_dir/retention.vars
-    testnet_timeout=$(expr $GENESIS_TIMESTAMP + $GENESIS_RESET_INTERVAL - 300)
+    testnet_timeout=$(expr $GENESIS_TIMESTAMP + $GENESIS_RESET_INTERVAL)
     if [ $testnet_timeout -le $(date +%s) ]; then
+      echo "[EphemeryWrapper] ephemery genesis is expired - retrying in 60sec..."
       sleep 60
       continue
     fi
@@ -32,6 +34,7 @@ ephemery_wrapper() {
     ensure_clean_datadir "$data_dir" "$reset_fn"
 
     # spin up client in background
+    trap "sigint_trap $proc_name" SIGINT
     $start_fn &
 
     # wait for next iteration
@@ -44,9 +47,7 @@ ephemery_wrapper() {
         if [ $sleep_timeout -lt $sleep_time ]; then
           sleep_time=$sleep_timeout
         fi
-      fi
-
-      if [ $sleep_time -le 0 ]; then
+      else
         break
       fi
       
@@ -58,15 +59,26 @@ ephemery_wrapper() {
         exit 1
       fi
     done
+
+    trap - SIGINT
   done
+}
+
+sigint_trap() {
+  # backend process should have received the SIGINT too.
+  # just wait for the process to exit and exit the wrapper too
+  stop_client $1 no
+  exit
 }
 
 stop_client() {
   proc_name="$1"
   proc_pid=$(pidof $proc_name)
   if ! [ -z "$proc_pid" ]; then
-    echo "[EphemeryWrapper] sending SIGINT to client process..."
-    kill -s SIGINT $proc_pid
+    if [ -z "$2" ]; then
+      echo "[EphemeryWrapper] sending SIGINT to client process..."
+      kill -s SIGINT $proc_pid
+    fi
 
     while true
     do
@@ -93,6 +105,7 @@ ensure_latest_config() {
     testnet_timeout=$(expr $GENESIS_TIMESTAMP + $GENESIS_RESET_INTERVAL - 300)
     stored_iteration="$ITERATION_RELEASE"
     if [ $testnet_timeout -gt $current_time ]; then
+      echo "[EphemeryWrapper] found stored ephemery genesis (iteration $stored_iteration) - skipping download"
       return
     fi
   fi
@@ -103,7 +116,7 @@ ensure_latest_config() {
     head -n 1)
   
   if [ ! -z "$stored_iteration" ] && [ "$stored_iteration" == "$ephemery_release" ]; then
-    echo "[EphemeryWrapper] No new genesis release found."
+    echo "[EphemeryWrapper] cannot load new genesis release, iteration $stored_iteration is still the latest available genesis."
     return
   fi
 

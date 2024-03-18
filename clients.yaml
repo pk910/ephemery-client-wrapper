@@ -25,6 +25,12 @@
   targetImage: pk910/ephemery-nethermind
   platform: linux/amd64,linux/arm64
 
+- client: reth
+  repository: paradigmxyz/reth
+  sourceImage: ghcr.io/paradigmxyz/reth
+  targetImage: pk910/ephemery-reth
+  platform: linux/amd64,linux/arm64
+
 # CL Clients
 
 - client: lighthouse
