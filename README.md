@@ -50,29 +50,29 @@ echo -n 0x$(openssl rand -hex 32 | tr -d "\n") > ./jwtsecret
 
 ### Execution Clients
 
-**Geth**:\
+**Geth**:
 ```
 docker run --pull always -v $(pwd)/jwtsecret:/execution-auth.jwt:ro -v $(pwd)/el:/data -p 30303:30303 -p 8545:8545 -p 8551:8551 -it pk910/ephemery-geth --datadir=/data --http --http.addr=0.0.0.0 --http.port=8545 --authrpc.addr=0.0.0.0 --authrpc.port=8551 --authrpc.vhosts=* --authrpc.jwtsecret=/execution-auth.jwt
 ```
 
-**Reth**:\
+**Reth**:
 ```
 docker run --pull always -v $(pwd)/jwtsecret:/execution-auth.jwt:ro -v $(pwd)/el:/data -p 30303:30303 -p 8545:8545 -p 8551:8551 -it pk910/ephemery-reth --datadir=/data --http --http.addr=0.0.0.0 --http.port=8545 --authrpc.addr=0.0.0.0 --authrpc.port=8551 --authrpc.vhosts=* --authrpc.jwtsecret=/execution-auth.jwt
 ```
 
 ### Consensus Clients
 
-**Lighthouse**:\
+**Lighthouse**:
 ```
 docker run --pull always -v $(pwd)/jwt:/execution-auth.jwt:ro -v $(pwd)/cl:/data -p 9000:9000 -p 5052:5052 -it pk910/ephemery-lighthouse lighthouse bn --datadir=/data --http --http-address=0.0.0.0 --http-port=5052 --execution-endpoint=http://172.17.0.1:8551 --execution-jwt=/execution-auth.jwt
 ```
 
-**Lodestar**:\
+**Lodestar**:
 ```
 docker run --pull always -v $(pwd)/jwt:/execution-auth.jwt:ro -v $(pwd)/cl:/data -p 9000:9000 -p 5052:5052 -it pk910/ephemery-lodestar beacon --dataDir=/data --rest --rest.address=0.0.0.0 --rest.namespace="*" --rest.port=5052 --execution.urls=http://172.17.0.1:8551 --jwt-secret=/execution-auth.jwt
 ```
 
-**Teku**:\
+**Teku**:
 ```
 docker run --pull always -v $(pwd)/jwt:/execution-auth.jwt:ro -v $(pwd)/cl:/data -p 9000:9000 -p 5052:5052 -it pk910/ephemery-teku --data-path=/data --rest-api-enabled --rest-api-interface=0.0.0.0 --rest-api-port=5052 --ee-endpoint=http://172.17.0.1:8551 --ee-jwt-secret-file=/execution-auth.jwt --ignore-weak-subjectivity-period-enabled
 ```

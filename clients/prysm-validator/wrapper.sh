@@ -18,7 +18,15 @@ done
 source /wrapper/wrapper.lib.sh
 
 start_client() {
-    /app/cmd/validator/validator $client_args
+    source $testnet_dir/nodevars_env.txt
+    ephemery_args=""
+    
+    if [ -z "$(echo "${client_args[@]}" | grep "chain-config-file")" ]; then
+        ephemery_args="$ephemery_args --chain-config-file=$testnet_dir/config.yaml"
+    fi
+
+    echo "args: ${client_args[@]} $ephemery_args"
+    /app/cmd/validator/validator "${client_args[@]}" $ephemery_args
 }
 
 ephemery_wrapper "validator" "$client_datadir" "" "start_client"

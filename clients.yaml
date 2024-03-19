@@ -47,12 +47,13 @@
 
 - client: prysm-beacon
   repository: prysmaticlabs/prysm
-  sourceImage: ethpandaops/prysm
+  sourceImage: gcr.io/prysmaticlabs/prysm/beacon-chain
   targetImage: pk910/ephemery-prysm-beacon
   platform: linux/amd64,linux/arm64
+
 - client: prysm-validator
   repository: prysmaticlabs/prysm
-  sourceImage: ethpandaops/prysm
+  sourceImage: gcr.io/prysmaticlabs/prysm/validator
   targetImage: pk910/ephemery-prysm-validator
   platform: linux/amd64,linux/arm64
 
