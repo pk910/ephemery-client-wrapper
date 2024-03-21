@@ -29,7 +29,7 @@ They should work exactly the same way as mainnet nodes, but connect to the ephem
 |--------|-------|---------------------|
 | Lighthouse | [pk910/ephemery-lighthouse](https://hub.docker.com/r/pk910/ephemery-lighthouse) | yes |
 | Lodestar | [pk910/ephemery-lodestar](https://hub.docker.com/r/pk910/ephemery-lodestar) | yes |
-| Prysm   | [pk910/ephemery-prysm-beacon](https://hub.docker.com/r/pk910/ephemery-prysm-beacon) / [pk910/ephemery-prysm-validator](https://hub.docker.com/r/pk910/ephemery-prysm-validator) |  |
+| Prysm   | [pk910/ephemery-prysm-beacon](https://hub.docker.com/r/pk910/ephemery-prysm-beacon) / [pk910/ephemery-prysm-validator](https://hub.docker.com/r/pk910/ephemery-prysm-validator) | yes |
 | Teku | [pk910/ephemery-teku](https://hub.docker.com/r/pk910/ephemery-teku) | yes |
 
 ## Examples
@@ -64,15 +64,20 @@ docker run --pull always -v $(pwd)/jwtsecret:/execution-auth.jwt:ro -v $(pwd)/el
 
 **Lighthouse**:
 ```
-docker run --pull always -v $(pwd)/jwt:/execution-auth.jwt:ro -v $(pwd)/cl:/data -p 9000:9000 -p 5052:5052 -it pk910/ephemery-lighthouse lighthouse bn --datadir=/data --http --http-address=0.0.0.0 --http-port=5052 --execution-endpoint=http://172.17.0.1:8551 --execution-jwt=/execution-auth.jwt
+docker run --pull always -v $(pwd)/jwtsecret:/execution-auth.jwt:ro -v $(pwd)/cl:/data -p 9000:9000 -p 5052:5052 -it pk910/ephemery-lighthouse lighthouse bn --datadir=/data --http --http-address=0.0.0.0 --http-port=5052 --execution-endpoint=http://172.17.0.1:8551 --execution-jwt=/execution-auth.jwt
 ```
 
 **Lodestar**:
 ```
-docker run --pull always -v $(pwd)/jwt:/execution-auth.jwt:ro -v $(pwd)/cl:/data -p 9000:9000 -p 5052:5052 -it pk910/ephemery-lodestar beacon --dataDir=/data --rest --rest.address=0.0.0.0 --rest.namespace="*" --rest.port=5052 --execution.urls=http://172.17.0.1:8551 --jwt-secret=/execution-auth.jwt
+docker run --pull always -v $(pwd)/jwtsecret:/execution-auth.jwt:ro -v $(pwd)/cl:/data -p 9000:9000 -p 5052:5052 -it pk910/ephemery-lodestar beacon --dataDir=/data --rest --rest.address=0.0.0.0 --rest.namespace="*" --rest.port=5052 --execution.urls=http://172.17.0.1:8551 --jwt-secret=/execution-auth.jwt
 ```
 
 **Teku**:
 ```
-docker run --pull always -v $(pwd)/jwt:/execution-auth.jwt:ro -v $(pwd)/cl:/data -p 9000:9000 -p 5052:5052 -it pk910/ephemery-teku --data-path=/data --rest-api-enabled --rest-api-interface=0.0.0.0 --rest-api-port=5052 --ee-endpoint=http://172.17.0.1:8551 --ee-jwt-secret-file=/execution-auth.jwt --ignore-weak-subjectivity-period-enabled
+docker run --pull always -v $(pwd)/jwtsecret:/execution-auth.jwt:ro -v $(pwd)/cl:/data -p 9000:9000 -p 5052:5052 -it pk910/ephemery-teku --data-path=/data --rest-api-enabled --rest-api-interface=0.0.0.0 --rest-api-port=5052 --ee-endpoint=http://172.17.0.1:8551 --ee-jwt-secret-file=/execution-auth.jwt --ignore-weak-subjectivity-period-enabled
+```
+
+**Prysm**:
+```
+docker run --pull always -v $(pwd)/jwtsecret:/execution-auth.jwt:ro -v $(pwd)/cl:/data -p 9000:9000 -p 5052:5052 -it pk910/ephemery-prysm-beacon --accept-terms-of-use=true --datadir=/data --grpc-gateway-host=0.0.0.0 --grpc-gateway-port=5052 --execution-endpoint=http://172.17.0.1:8551 --jwt-secret=/execution-auth.jwt --min-sync-peers=2
 ```

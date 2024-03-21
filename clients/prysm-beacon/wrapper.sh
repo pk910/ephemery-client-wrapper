@@ -38,7 +38,7 @@ start_client() {
     fi
 
     echo "args: ${client_args[@]} $ephemery_args"
-    /app/cmd/beacon-chain/beacon-chain "${client_args[@]}" $ephemery_args
+    /app/cmd/beacon-chain/beacon-chain ${client_args[@]} $ephemery_args
 }
 
 ephemery_wrapper "beacon-chain" "$client_datadir" "" "start_client"

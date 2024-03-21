@@ -26,7 +26,7 @@ start_client() {
     fi
 
     echo "args: ${client_args[@]} $ephemery_args"
-    /app/cmd/validator/validator "${client_args[@]}" $ephemery_args
+    /app/cmd/validator/validator ${client_args[@]} $ephemery_args
 }
 
 ephemery_wrapper "validator" "$client_datadir" "" "start_client"
