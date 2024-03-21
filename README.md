@@ -17,10 +17,10 @@ They should work exactly the same way as mainnet nodes, but connect to the ephem
 
 | Client | Image | Tested |
 |--------|-------|---------------------|
-| Besu   | [pk910/ephemery-besu](https://hub.docker.com/r/pk910/ephemery-besu) |  |
+| Besu   | [pk910/ephemery-besu](https://hub.docker.com/r/pk910/ephemery-besu) | yes |
 | Erigon | [pk910/ephemery-erigon](https://hub.docker.com/r/pk910/ephemery-erigon) |  |
 | Geth   | [pk910/ephemery-geth](https://hub.docker.com/r/pk910/ephemery-geth) | yes |
-| Nethermind | [pk910/ephemery-nethermind](https://hub.docker.com/r/pk910/ephemery-nethermind) |  |
+| Nethermind | [pk910/ephemery-nethermind](https://hub.docker.com/r/pk910/ephemery-nethermind) | yes |
 | Reth | [pk910/ephemery-reth](https://hub.docker.com/r/pk910/ephemery-reth) | yes |
 
 ### Consensus Clients
@@ -53,6 +53,21 @@ echo -n 0x$(openssl rand -hex 32 | tr -d "\n") > ./jwtsecret
 **Geth**:
 ```
 docker run --pull always -v $(pwd)/jwtsecret:/execution-auth.jwt:ro -v $(pwd)/el:/data -p 30303:30303 -p 8545:8545 -p 8551:8551 -it pk910/ephemery-geth --datadir=/data --http --http.addr=0.0.0.0 --http.port=8545 --authrpc.addr=0.0.0.0 --authrpc.port=8551 --authrpc.vhosts=* --authrpc.jwtsecret=/execution-auth.jwt
+```
+
+**Erigon**:
+```
+docker run --pull always -v $(pwd)/jwtsecret:/execution-auth.jwt:ro -v $(pwd)/el:/data -p 30303:30303 -p 8545:8545 -p 8551:8551 -it pk910/ephemery-erigon --datadir=/data --http --http.addr=0.0.0.0 --http.port=8545 --authrpc.addr=0.0.0.0 --authrpc.port=8551 --authrpc.vhosts=* --authrpc.jwtsecret=/execution-auth.jwt --db.size.limit=100GB
+```
+
+**Besu**:
+```
+docker run --pull always -v $(pwd)/jwtsecret:/execution-auth.jwt:ro -v $(pwd)/el:/data -p 30303:30303 -p 8545:8545 -p 8551:8551 -it pk910/ephemery-besu --data-path=/data --rpc-http-enabled --rpc-http-host=0.0.0.0 --rpc-http-port=8545 --engine-rpc-port=8551 --engine-host-allowlist=* --engine-jwt-secret=/execution-auth.jwt
+```
+
+**Nethermind**:
+```
+docker run --pull always -v $(pwd)/jwtsecret:/execution-auth.jwt:ro -v $(pwd)/el:/data -p 30303:30303 -p 8545:8545 -p 8551:8551 -it pk910/ephemery-nethermind --datadir=/data --KeyStore.KeyStoreDirectory=/data/keystore --JsonRpc.Enabled=true --JsonRpc.Host=0.0.0.0 --JsonRpc.Port=8545 --JsonRpc.EngineHost=0.0.0.0 --JsonRpc.EnginePort=8551 --JsonRpc.JwtSecretFile=/execution-auth.jwt
 ```
 
 **Reth**:

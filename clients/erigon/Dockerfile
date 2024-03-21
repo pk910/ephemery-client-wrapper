@@ -1,4 +1,4 @@
-FROM thorax/erigon:stable
+FROM thorax/erigon:v2.59.0
 
 USER root
 RUN apk add --no-cache curl bash && rm -rf /var/cache/apk/*

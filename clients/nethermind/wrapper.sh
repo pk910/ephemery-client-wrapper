@@ -19,7 +19,23 @@ source /wrapper/wrapper.lib.sh
 
 start_client() {
     source $testnet_dir/nodevars_env.txt
-    /nethermind/nethermind $client_args --Init.ChainSpecPath=$testnet_dir/chainspec.json --Discovery.Bootnodes=$BOOTNODE_ENODE_LIST
+
+    ephemery_args=""
+    if [ -z "$(echo "${client_args[@]}" | grep "Init.ChainSpecPath")" ]; then
+        ephemery_args="$ephemery_args --Init.ChainSpecPath=$testnet_dir/chainspec.json"
+    fi
+    if [ -z "$(echo "${client_args[@]}" | grep "Init.GenesisHash")" ]; then
+        ephemery_args="$ephemery_args --Init.GenesisHash=$GENESIS_BLOCK"
+    fi
+    if [ -z "$(echo "${client_args[@]}" | grep "config")" ]; then
+        ephemery_args="$ephemery_args --config=none.cfg"
+    fi
+    if [ -z "$(echo "${client_args[@]}" | grep "Discovery.Bootnodes")" ]; then
+        ephemery_args="$ephemery_args --Discovery.Bootnodes=$BOOTNODE_ENODE_LIST"
+    fi
+
+    echo "args: ${client_args[@]} $ephemery_args"
+    /nethermind/nethermind ${client_args[@]} $ephemery_args
 }
 
 ephemery_wrapper "nethermind" "$client_datadir" "" "start_client"

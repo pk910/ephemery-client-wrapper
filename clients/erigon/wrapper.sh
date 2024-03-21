@@ -27,6 +27,9 @@ start_client() {
     if [ -z "$(echo "${client_args[@]}" | grep "chain")" ]; then
         ephemery_args="$ephemery_args --chain=dev"
     fi
+    if [ -z "$(echo "${client_args[@]}" | grep "bootnodes")" ]; then
+        ephemery_args="$ephemery_args --bootnodes=$BOOTNODE_ENODE_LIST"
+    fi
 
     echo "args: ${client_args[@]} $ephemery_args"
     erigon "${client_args[@]}" $ephemery_args
