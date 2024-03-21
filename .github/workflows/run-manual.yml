@@ -40,6 +40,7 @@ jobs:
 
         echo "repository=$(echo "$client_config" | jq -r ".repository")" >> $GITHUB_OUTPUT
         echo "sourceImage=$(echo "$client_config" | jq -r ".sourceImage")" >> $GITHUB_OUTPUT
+        echo "sourceImagePrefix=$(echo "$client_config" | jq -r '.sourceImagePrefix // ""')" >> $GITHUB_OUTPUT
         echo "targetImage=$(echo "$client_config" | jq -r ".targetImage")" >> $GITHUB_OUTPUT
         echo "platform=$(echo "$client_config" | jq -r ".platform")" >> $GITHUB_OUTPUT
     - name: Check latest release
@@ -56,7 +57,11 @@ jobs:
           exit
         fi
 
-        source_image="${{ steps.client.outputs.sourceImage }}:$client_release"
+        source_tag="$client_release"
+        if [ ! -z "${{ steps.client.outputs.sourceImagePrefix }}" ]; then
+          source_tag="${{ steps.client.outputs.sourceImagePrefix }}$source_tag"
+        fi
+        source_image="${{ steps.client.outputs.sourceImage }}:$source_tag"
         echo "check source image: $source_image"
         if [ -z "$(docker manifest inspect $source_image | grep "schemaVersion")" ]; then
           echo "source image not found!"

@@ -57,7 +57,11 @@ jobs:
           exit
         fi
 
-        source_image="${{ matrix.config.sourceImage }}:$client_release"
+        source_tag="$client_release"
+        if [ ! -z "${{ matrix.config.sourceImagePrefix }}" ]; then
+          source_tag="${{ matrix.config.sourceImagePrefix }}$source_tag"
+        fi
+        source_image="${{ matrix.config.sourceImage }}:$source_tag"
         echo "check source image: $source_image"
         if [ -z "$(docker manifest inspect $source_image | grep "schemaVersion")" ]; then
           echo "source image not found!"

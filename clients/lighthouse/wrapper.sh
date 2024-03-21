@@ -44,4 +44,4 @@ reset_client() {
     fi
 }
 
-ephemery_wrapper "lighthouse.bin" "$client_datadir" "" "start_client"
+ephemery_wrapper "lighthouse.bin" "$client_datadir" "reset_client" "start_client"

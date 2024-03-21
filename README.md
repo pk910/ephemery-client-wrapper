@@ -31,6 +31,7 @@ They should work exactly the same way as mainnet nodes, but connect to the ephem
 | Lodestar | [pk910/ephemery-lodestar](https://hub.docker.com/r/pk910/ephemery-lodestar) | yes |
 | Prysm   | [pk910/ephemery-prysm-beacon](https://hub.docker.com/r/pk910/ephemery-prysm-beacon) / [pk910/ephemery-prysm-validator](https://hub.docker.com/r/pk910/ephemery-prysm-validator) | yes |
 | Teku | [pk910/ephemery-teku](https://hub.docker.com/r/pk910/ephemery-teku) | yes |
+| Nimbus | [pk910/ephemery-nimbus](https://hub.docker.com/r/pk910/ephemery-nimbus) |  |
 
 ## Examples
 

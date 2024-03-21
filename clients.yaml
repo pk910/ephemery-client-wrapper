@@ -62,3 +62,10 @@
   sourceImage: consensys/teku
   targetImage: pk910/ephemery-teku
   platform: linux/amd64,linux/arm64
+
+- client: nimbus
+  repository: status-im/nimbus-eth2
+  sourceImage: statusim/nimbus-eth2
+  sourceImagePrefix: "multiarch-"
+  targetImage: pk910/ephemery-nimbus
+  platform: linux/amd64,linux/arm64
