@@ -110,7 +110,7 @@ ensure_latest_config() {
     fi
   fi
 
-  ephemery_release=$(curl --silent "https://api.github.com/repos/$ephemery_repo/releases/latest" |
+  ephemery_release=$(curl -k --silent "https://api.github.com/repos/$ephemery_repo/releases/latest" |
     grep '"tag_name":' |
     sed -E 's/.*"([^"]+)".*/\1/' |
     head -n 1)
@@ -123,7 +123,7 @@ ensure_latest_config() {
   echo "[EphemeryWrapper] downloading genesis release: $ephemery_release  https://github.com/$ephemery_repo/releases/download/$ephemery_release/testnet-all.tar.gz"
 
   rm -rf $testnet_dir/*
-  curl --silent -L https://github.com/$ephemery_repo/releases/download/$ephemery_release/testnet-all.tar.gz | tar xz -C $testnet_dir
+  curl -k --silent -L https://github.com/$ephemery_repo/releases/download/$ephemery_release/testnet-all.tar.gz | tar xz -C $testnet_dir
 }
 
 ensure_clean_datadir() {
