@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# prysm image has limited shell support
+# extend $PATH to include some additional shell binaries the wrapper uses
+export PATH=$PATH:/wrapper/bin/
+
+# override /bin/expr as it's broken in prysm image
+expr() {
+    /wrapper/bin/expr "$@"
+}
+
 client_datadir="~/.eth2"
 
 client_args="$@"
