@@ -40,7 +40,7 @@ ephemery_wrapper() {
     # wait for next iteration
     while true
     do
-      sleep_time=10
+      sleep_time=120
       current_time=$(date +%s)
       if [ $testnet_timeout -gt $current_time ]; then
         sleep_timeout=$(expr $testnet_timeout - $current_time)
@@ -80,12 +80,25 @@ stop_client() {
       kill -s SIGINT $proc_pid
     fi
 
+    retry=0
     while true
     do
       sleep 5
       proc_pid=$(pidof $proc_name)
       if [ -z "$proc_pid" ]; then
         break
+      fi
+
+      retry=$(expr $retry + 1)
+      if [ $retry -eq 24 ]; then
+        # still running after 2 min, send SIGINT again
+        echo "[EphemeryWrapper] sending 2nd SIGINT to client process..."
+        kill -s SIGINT $proc_pid
+      elif [ $retry -eq 48 ]; then
+        # still running after 4 min, send SIGKILL
+        # we really have to stop the client here, or we'll miss the genesis at t+5min
+        echo "[EphemeryWrapper] sending SIGKILL to client process..."
+        kill -s SIGKILL $proc_pid
       fi
     done
     echo "[EphemeryWrapper] client process stopped"
