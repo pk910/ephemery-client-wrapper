@@ -43,8 +43,18 @@ start_client() {
 }
 
 reset_client() {
-    ls -A1 $client_datadir/ | grep -E -v "validator" | xargs rm -rf
+    if [ -d $client_datadir/beacon ]; then
+        echo "[EphemeryWrapper] clearing teku beacon data"
+        # retain kvstore (persist node key & enr metadata)
+        mv $client_datadir/beacon/kvstore $client_datadir/kvstore.bak
+        rm -rf $client_datadir/beacon/*
+        mv $client_datadir/kvstore.bak $client_datadir/beacon/kvstore
+    fi
+    if [ -d $client_datadir/logs ]; then
+        rm -rf $client_datadir/logs
+    fi
     if [ -d $client_datadir/validator/slashprotection ]; then
+        echo "[EphemeryWrapper] clearing teku validator slashprotection"
         rm -rf $client_datadir/validator/slashprotection
     fi
 }
