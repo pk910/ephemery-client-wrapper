@@ -42,7 +42,15 @@ start_client() {
 }
 
 reset_client() {
-    ls -A1 $client_datadir/ | grep -E -v "keys|secrets" | xargs rm -rf
+    if [ -d $client_datadir/chain-db ]; then
+        echo "[EphemeryWrapper] clearing lodestar beacon chain-db"
+        rm -rf $client_datadir/chain-db/*
+    fi
+
+    if [ -f $client_datadir/validator-db ]; then
+        echo "[EphemeryWrapper] clearing lodestar validator validator-db"
+        rm -rf $client_datadir/validator-db
+    fi
 }
 
 ephemery_wrapper "node" "$client_datadir" "reset_client" "start_client"
