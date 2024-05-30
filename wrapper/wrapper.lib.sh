@@ -128,6 +128,9 @@ ensure_latest_config() {
     sed -E 's/.*"([^"]+)".*/\1/' |
     head -n 1)
   
+  if [ -z "$ephemery_release" ]; then
+    echo "[EphemeryWrapper] could not get latest genesis release version."
+  fi
   if [ ! -z "$stored_iteration" ] && [ "$stored_iteration" == "$ephemery_release" ]; then
     echo "[EphemeryWrapper] cannot load new genesis release, iteration $stored_iteration is still the latest available genesis."
     return

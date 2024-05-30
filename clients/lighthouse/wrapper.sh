@@ -38,8 +38,16 @@ start_client() {
 }
 
 reset_client() {
-    ls -A1 $client_datadir/ | grep -E -v "keys|secrets" | xargs rm -rf
+    if [ -d $client_datadir/beacon ]; then
+        echo "[EphemeryWrapper] clearing lighthouse beacon data"
+        # retain network metadata (persist node key & enr metadata)
+        mv $client_datadir/beacon/network $client_datadir/network.bak
+        rm -rf $client_datadir/beacon/*
+        mv $client_datadir/network.bak $client_datadir/beacon/network
+    fi
+
     if [ -f $client_datadir/keys/slashing_protection.sqlite ]; then
+        echo "[EphemeryWrapper] clearing lighthouse validator slashing protection"
         rm $client_datadir/keys/slashing_protection.sqlite
     fi
 }

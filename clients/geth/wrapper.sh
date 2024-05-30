@@ -33,7 +33,15 @@ start_client() {
 }
 
 reset_client() {
-    rm -rf $client_datadir/*
+    if [ -d $client_datadir/geth ]; then
+        echo "[EphemeryWrapper] clearing geth data"
+
+        # retain node key
+        mv $client_datadir/geth/nodekey $client_datadir/nodekey.bak
+        rm -rf $client_datadir/geth/*
+        mv $client_datadir/nodekey.bak $client_datadir/geth/nodekey
+    fi
+
     geth init --datadir=$client_datadir $testnet_dir/genesis.json
 }
 

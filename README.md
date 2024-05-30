@@ -17,21 +17,21 @@ They should work exactly the same way as mainnet nodes, but connect to the ephem
 
 | Client | Image | Tested |
 |--------|-------|---------------------|
-| Besu   | [pk910/ephemery-besu](https://hub.docker.com/r/pk910/ephemery-besu) | yes |
-| Erigon | [pk910/ephemery-erigon](https://hub.docker.com/r/pk910/ephemery-erigon) |  |
-| Geth   | [pk910/ephemery-geth](https://hub.docker.com/r/pk910/ephemery-geth) | yes |
-| Nethermind | [pk910/ephemery-nethermind](https://hub.docker.com/r/pk910/ephemery-nethermind) | yes |
-| Reth | [pk910/ephemery-reth](https://hub.docker.com/r/pk910/ephemery-reth) | yes |
+| Besu   | [pk910/ephemery-besu](https://hub.docker.com/r/pk910/ephemery-besu) |
+| Erigon | [pk910/ephemery-erigon](https://hub.docker.com/r/pk910/ephemery-erigon) |
+| Geth   | [pk910/ephemery-geth](https://hub.docker.com/r/pk910/ephemery-geth) |
+| Nethermind | [pk910/ephemery-nethermind](https://hub.docker.com/r/pk910/ephemery-nethermind) |
+| Reth | [pk910/ephemery-reth](https://hub.docker.com/r/pk910/ephemery-reth) |
 
 ### Consensus Clients
 
 | Client | Image | Tested |
 |--------|-------|---------------------|
-| Lighthouse | [pk910/ephemery-lighthouse](https://hub.docker.com/r/pk910/ephemery-lighthouse) | yes |
-| Lodestar | [pk910/ephemery-lodestar](https://hub.docker.com/r/pk910/ephemery-lodestar) | yes |
-| Prysm   | [pk910/ephemery-prysm-beacon](https://hub.docker.com/r/pk910/ephemery-prysm-beacon) / [pk910/ephemery-prysm-validator](https://hub.docker.com/r/pk910/ephemery-prysm-validator) | yes |
-| Teku | [pk910/ephemery-teku](https://hub.docker.com/r/pk910/ephemery-teku) | yes |
-| Nimbus | [pk910/ephemery-nimbus](https://hub.docker.com/r/pk910/ephemery-nimbus) |  |
+| Lighthouse | [pk910/ephemery-lighthouse](https://hub.docker.com/r/pk910/ephemery-lighthouse) |
+| Lodestar | [pk910/ephemery-lodestar](https://hub.docker.com/r/pk910/ephemery-lodestar) |
+| Prysm   | [pk910/ephemery-prysm-beacon](https://hub.docker.com/r/pk910/ephemery-prysm-beacon) / [pk910/ephemery-prysm-validator](https://hub.docker.com/r/pk910/ephemery-prysm-validator) |
+| Teku | [pk910/ephemery-teku](https://hub.docker.com/r/pk910/ephemery-teku) |
+| Nimbus | [pk910/ephemery-nimbus](https://hub.docker.com/r/pk910/ephemery-nimbus) |
 
 ## Examples
 
