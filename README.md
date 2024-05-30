@@ -15,8 +15,8 @@ They should work exactly the same way as mainnet nodes, but connect to the ephem
 
 ### Execution Clients
 
-| Client | Image | Tested |
-|--------|-------|---------------------|
+| Client | Image |
+|--------|-------|
 | Besu   | [pk910/ephemery-besu](https://hub.docker.com/r/pk910/ephemery-besu) |
 | Erigon | [pk910/ephemery-erigon](https://hub.docker.com/r/pk910/ephemery-erigon) |
 | Geth   | [pk910/ephemery-geth](https://hub.docker.com/r/pk910/ephemery-geth) |
@@ -25,8 +25,8 @@ They should work exactly the same way as mainnet nodes, but connect to the ephem
 
 ### Consensus Clients
 
-| Client | Image | Tested |
-|--------|-------|---------------------|
+| Client | Image |
+|--------|-------|
 | Lighthouse | [pk910/ephemery-lighthouse](https://hub.docker.com/r/pk910/ephemery-lighthouse) |
 | Lodestar | [pk910/ephemery-lodestar](https://hub.docker.com/r/pk910/ephemery-lodestar) |
 | Prysm   | [pk910/ephemery-prysm-beacon](https://hub.docker.com/r/pk910/ephemery-prysm-beacon) / [pk910/ephemery-prysm-validator](https://hub.docker.com/r/pk910/ephemery-prysm-validator) |
