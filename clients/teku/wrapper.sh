@@ -21,7 +21,7 @@ start_client() {
     source $testnet_dir/nodevars_env.txt
 
     ephemery_args=""
-    if [ -z "$(echo "${client_args[@]}" | grep "network")" ]; then
+    if [ -z "$(echo "${client_args[@]}" | grep "--network")" ]; then
         ephemery_args="$ephemery_args --network=$testnet_dir/config.yaml"
     fi
     
