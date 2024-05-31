@@ -35,7 +35,7 @@ start_client() {
     fi
 
     echo "args: ${client_args[@]} $ephemery_args"
-    /nethermind/nethermind ${client_args[@]} $ephemery_args
+    /nethermind/nethermind.bin ${client_args[@]} $ephemery_args
 }
 
-ephemery_wrapper "nethermind" "$client_datadir" "" "start_client"
+ephemery_wrapper "nethermind.bin" "$client_datadir" "" "start_client"
