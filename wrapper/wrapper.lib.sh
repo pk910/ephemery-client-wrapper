@@ -166,5 +166,11 @@ ensure_clean_datadir() {
     rm -rf $data_dir/*
   fi
   echo "EPD_ITERATION=\"$ITERATION_NUMBER\"" > $data_dir/ephemery.vars
+
+  if [ -d  "/wrapper/reset.d" ]; then
+    for f in /wrapper/reset.d/*.sh; do
+      source "$f" 
+    done
+  fi
 }
 
