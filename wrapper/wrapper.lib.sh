@@ -9,6 +9,9 @@ ephemery_wrapper() {
   reset_fn="$3"
   start_fn="$4"
 
+  trap "sigint_trap $proc_name" SIGINT
+  trap "sigterm_trap $proc_name" SIGTERM
+
   while true
   do
     # stop client if running
@@ -34,7 +37,6 @@ ephemery_wrapper() {
     ensure_clean_datadir "$data_dir" "$reset_fn"
 
     # spin up client in background
-    trap "sigint_trap $proc_name" SIGINT
     $start_fn &
 
     # wait for next iteration
@@ -51,7 +53,10 @@ ephemery_wrapper() {
         break
       fi
       
-      sleep $sleep_time
+      for i in {1..$sleep_time}
+      do
+        sleep 1
+      done
 
       proc_pid=$(pidof $proc_name)
       if [ -z "$proc_pid" ]; then
@@ -60,14 +65,18 @@ ephemery_wrapper() {
       fi
     done
 
-    trap - SIGINT
   done
 }
 
 sigint_trap() {
-  # backend process should have received the SIGINT too.
-  # just wait for the process to exit and exit the wrapper too
-  stop_client $1 no
+  echo "[EphemeryWrapper] received SIGINT signal"
+  stop_client $1
+  exit
+}
+
+sigterm_trap() {
+  echo "[EphemeryWrapper] received SIGTERM signal"
+  stop_client $1
   exit
 }
 
