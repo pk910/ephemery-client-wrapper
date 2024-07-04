@@ -1,6 +1,7 @@
 #!/bin/bash
 
 client_datadir="~/.lighthouse"
+client_keydir=""
 
 client_args=("$@")
 while [[ $# -gt 0 ]]; do
@@ -10,6 +11,12 @@ while [[ $# -gt 0 ]]; do
         ;;
     --datadir)
         client_datadir="${2}"
+        ;;
+    --validators-dir=*)
+        client_keydir="${1#*=}"
+        ;;
+    --validators-dir)
+        client_keydir="${2}"
         ;;
     esac
     shift
@@ -46,9 +53,14 @@ reset_client() {
         mv $client_datadir/network.bak $client_datadir/beacon/network
     fi
 
-    if [ -f $client_datadir/keys/slashing_protection.sqlite ]; then
+    keydir="$client_keydir"
+    if [ -z "$keydir" ]; then
+        keydir="$client_datadir/keys"
+    fi
+
+    if [ -f $keydir/slashing_protection.sqlite ]; then
         echo "[EphemeryWrapper] clearing lighthouse validator slashing protection"
-        rm $client_datadir/keys/slashing_protection.sqlite
+        rm $keydir/slashing_protection.sqlite
     fi
 }
 
