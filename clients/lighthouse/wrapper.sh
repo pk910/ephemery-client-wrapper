@@ -22,6 +22,10 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
+if [ ! -z "$client_keydir" ]; then
+    client_datadir="$client_keydir"
+fi
+
 source /wrapper/wrapper.lib.sh
 
 start_client() {
