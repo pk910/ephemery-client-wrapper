@@ -78,7 +78,7 @@ docker run --pull always -v $(pwd)/jwtsecret:/execution-auth.jwt:ro -v $(pwd)/el
 
 **EthereumJS**:
 ```
-docker run -v $(pwd)/jwtsecret:/execution-auth.jwt:ro --network host -e JWT_SECRET=/execution-auth.jwt -it pk910/ephemery-ethereumjs
+docker run -v $(pwd)/jwtsecret:/execution-auth.jwt:ro -v $(pwd)/el:/.ethereum --network host -e JWT_SECRET=/execution-auth.jwt -it pk910/ephemery-ethereumjs
 ```
 
 ### Consensus Clients

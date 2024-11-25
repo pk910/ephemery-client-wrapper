@@ -26,7 +26,7 @@ start_client() {
     fi
 
     echo "args: ${client_args[@]} $ephemery_args"
-    node /usr/app/packages/client/dist/esm/bin/cli.js  --dataDir=$client_datadir --gethGenesis=$testnet_dir/genesis.json --rpcEngine --jwtSecret=$JWT_SECRET "${client_args[@]}" $ephemery_args
+    node /usr/app/packages/client/dist/esm/bin/cli.js  --dataDir=$client_datadir --gethGenesis=$testnet_dir/genesis.json --rpcEngine --rpcEngineAddr 0.0.0.0 --jwtSecret=/execution-auth.jwt "${client_args[@]}" $ephemery_args
 }
 
 reset_client() {
@@ -34,7 +34,7 @@ reset_client() {
         echo "[EphemeryWrapper] clearing ethjs data"
     fi
 
-    node /usr/app/packages/client/dist/esm/bin/cli.js --dataDir=$client_datadir --gethGenesis=$testnet_dir/genesis.json --rpcEngine --jwtSecret=$JWT_SECRET
+    node /usr/app/packages/client/dist/esm/bin/cli.js --dataDir=$client_datadir --gethGenesis=$testnet_dir/genesis.json --rpcEngine --rpcEngineAddr 0.0.0.0 --jwtSecret=/execution-auth.jwt
 }
 
-ephemery_wrapper "geth" "$client_datadir" "reset_client" "start_client"
+ephemery_wrapper "$client_datadir" "reset_client" "start_client"
