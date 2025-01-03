@@ -76,6 +76,11 @@ docker run --pull always -v $(pwd)/jwtsecret:/execution-auth.jwt:ro -v $(pwd)/el
 docker run --pull always -v $(pwd)/jwtsecret:/execution-auth.jwt:ro -v $(pwd)/el:/data -p 30303:30303 -p 8545:8545 -p 8551:8551 -it pk910/ephemery-reth --datadir=/data --http --http.addr=0.0.0.0 --http.port=8545 --authrpc.addr=0.0.0.0 --authrpc.port=8551 --authrpc.vhosts=* --authrpc.jwtsecret=/execution-auth.jwt
 ```
 
+**EthereumJS**:
+```
+docker run -v $(pwd)/jwtsecret:/execution-auth.jwt:ro -v $(pwd)/el:/.ethereum --network host -e JWT_SECRET=/execution-auth.jwt -it pk910/ephemery-ethereumjs
+```
+
 ### Consensus Clients
 
 **Lighthouse**:
