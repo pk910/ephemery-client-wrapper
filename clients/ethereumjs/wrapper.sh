@@ -5,10 +5,10 @@ client_datadir="~/.ethereum"
 client_args=("$@")
 while [[ $# -gt 0 ]]; do
     case $1 in
-    --datadir=*)
+    --dataDir=*)
         client_datadir="${1#*=}"
         ;;
-    --datadir)
+    --dataDir)
         client_datadir="${2}"
         ;;
     esac
@@ -34,7 +34,7 @@ reset_client() {
         echo "[EphemeryWrapper] clearing ethjs data"
     fi
 
-    node /usr/app/packages/client/dist/esm/bin/cli.js --dataDir=$client_datadir --gethGenesis=$testnet_dir/genesis.json --rpcEngine --rpcEngineAddr 0.0.0.0 --jwtSecret=/execution-auth.jwt
+    rm -rf $client_datadir
 }
 
-ephemery_wrapper "$client_datadir" "reset_client" "start_client"
+ephemery_wrapper node "$client_datadir" "reset_client" "start_client"
