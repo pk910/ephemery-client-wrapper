@@ -24,9 +24,15 @@ start_client() {
     if [ -z "$(echo "${client_args[@]}" | grep "bootnodes")" ]; then
         ephemery_args="$ephemery_args --bootnodes=$BOOTNODE_ENODE_LIST"
     fi
+    if [ -z "$(echo "${client_args[@]}" | grep "gethGenesis")" ]; then
+        ephemery_args="$ephemery_args --gethGenesis=$testnet_dir/genesis.json"
+    fi
+    if [ -z "$(echo "${client_args[@]}" | grep "jwtSecret")" ]; then
+        ephemery_args="$ephemery_args --jwtSecret=/execution-auth.jwt"
+    fi
 
     echo "args: ${client_args[@]} $ephemery_args"
-    node /usr/app/packages/client/dist/esm/bin/cli.js  --dataDir=$client_datadir --gethGenesis=$testnet_dir/genesis.json --rpcEngine --rpcEngineAddr 0.0.0.0 --jwtSecret=/execution-auth.jwt "${client_args[@]}" $ephemery_args
+    node /usr/app/packages/client/dist/esm/bin/cli.js  "${client_args[@]}" $ephemery_args
 }
 
 reset_client() {
