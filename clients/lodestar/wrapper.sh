@@ -1,6 +1,7 @@
 #!/bin/bash
 
 client_datadir="~/.local/share/lodestar"
+default_datadir="$client_datadir"
 
 client_args=("$@")
 while [[ $# -gt 0 ]]; do
@@ -11,9 +12,30 @@ while [[ $# -gt 0 ]]; do
     --dataDir)
         client_datadir="${2}"
         ;;
+    --rcConfig=*)
+        rc_file="${1#*=}"
+        ;;
+    --rcConfig)
+        rc_file="${2}"
+        ;;
     esac
     shift
 done
+
+
+if [[ "$client_datadir" == "$default_datadir" ]]; then
+    if [ -f "$rc_file" ]; then
+        rc_file_datadir=$(grep -w 'dataDir' $rc_file)
+        rc_file_datadir=${rc_file_datadir##*:}
+        rc_file_datadir=${rc_file_datadir// /}
+        rc_file_datadir=${rc_file_datadir//[\"\']/}
+
+        if [ -n "$rc_file_datadir" ]; then
+            client_datadir="$rc_file_datadir"
+        fi
+    fi
+fi
+
 
 source /wrapper/wrapper.lib.sh
 
