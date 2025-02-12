@@ -1,0 +1,104 @@
+name: Build from client image
+
+on:
+  workflow_dispatch:
+    inputs:
+      client:
+        description: 'Client to build'
+        default: ""
+        type: string
+      sourceImage:
+        description: 'Client image to build from'
+        default: ""
+        type: string
+      targetTag:
+        description: 'Tag for the built image'
+        default: ""
+        type: string
+
+concurrency:
+  group: "scheduled-build"
+  cancel-in-progress: false
+
+jobs:
+
+  run_client_builds:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    
+    - name: "Load client configuration from clients.yaml"
+      id: client
+      shell: bash
+      run: |
+        clients_file="clients.yaml"
+
+        client_configs="$(cat $clients_file | yq -o json | jq -c)"
+        client_config="$(echo "$client_configs" | jq -c ".[] | select(.client == \"${{ inputs.client }}\")")"
+
+        echo "repository=$(echo "$client_config" | jq -r ".repository")" >> $GITHUB_OUTPUT
+        echo "sourceImage=$(echo "$client_config" | jq -r ".sourceImage")" >> $GITHUB_OUTPUT
+        echo "sourceImagePrefix=$(echo "$client_config" | jq -r '.sourceImagePrefix // ""')" >> $GITHUB_OUTPUT
+        echo "targetImage=$(echo "$client_config" | jq -r ".targetImage")" >> $GITHUB_OUTPUT
+        echo "platform=$(echo "$client_config" | jq -r ".platform")" >> $GITHUB_OUTPUT
+    - name: Check latest release
+      id: check
+      run: |
+        
+        client_release="${{ inputs.targetTag }}"
+        source_image="${{ inputs.sourceImage }}"
+        echo "check source image: $source_image"
+        if [ -z "$(docker manifest inspect $source_image | grep "schemaVersion")" ]; then
+          echo "source image not found!"
+          exit
+        fi
+
+        target_image="${{ steps.client.outputs.targetImage }}:$client_release"
+        echo "check target image: $target_image"
+        if ! [ -z "$(docker manifest inspect $target_image | grep "schemaVersion")" ]; then
+          echo "target image already exists!"
+        fi
+
+        echo "client_release=$(echo "$client_release")" >> $GITHUB_OUTPUT
+        echo "source_image=$(echo "$source_image")" >> $GITHUB_OUTPUT
+        echo "target_image=$(echo "$target_image")" >> $GITHUB_OUTPUT
+        echo "need_build=true" >> $GITHUB_OUTPUT
+    
+    - name: Setup cross build dependencies
+      if: ${{ steps.check.outputs.need_build == 'true' }}
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install gcc-aarch64-linux-gnu
+    - name: Setup Docker Buildx
+      if: ${{ steps.check.outputs.need_build == 'true' }}
+      uses: docker/setup-buildx-action@v2
+
+    - name: Rewrite Dockerfile for wrapper image
+      if: ${{ steps.check.outputs.need_build == 'true' }}
+      run: |
+        client="${{ inputs.client }}"
+
+        if ! [ -d ./clients/$client ]; then
+          echo "client folder not found"
+          exit 1
+        fi
+
+        # rewrite Dockerfile
+        mv ./clients/$client/Dockerfile ./clients/$client/Dockerfile.org
+        echo "FROM ${{ steps.check.outputs.source_image }}" > ./clients/$client/Dockerfile
+        cat ./clients/$client/Dockerfile.org | grep -E -v "^FROM" >> ./clients/$client/Dockerfile
+
+    - name: "Build docker image"
+      if: ${{ steps.check.outputs.need_build == 'true' }}
+      run: |
+        docker buildx build . --file ./clients/${{ inputs.client }}/Dockerfile \
+          --platform ${{ steps.client.outputs.platform }} \
+          --tag ${{ steps.check.outputs.target_image }} \
+          --push
+
