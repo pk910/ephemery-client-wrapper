@@ -69,7 +69,7 @@ reset_client() {
         rm -rf $client_datadir/chain-db/*
     fi
 
-    if [ -f $client_datadir/validator-db ]; then
+    if [ -d $client_datadir/validator-db ]; then
         echo "[EphemeryWrapper] clearing lodestar validator validator-db"
         rm -rf $client_datadir/validator-db
     fi
