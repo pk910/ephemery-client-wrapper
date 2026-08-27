@@ -2,6 +2,11 @@ name: Run scheduled build
 
 on:
   workflow_dispatch:
+    inputs:
+      force:
+        description: 'Rebuild all clients, even if the target image already exists'
+        default: false
+        type: boolean
   schedule:
   - cron: '0 */4 * * *'
 
@@ -51,7 +56,8 @@ jobs:
       run: |
         client_repo="${{ matrix.config.repository }}"
 
-        client_release="$(curl --silent "https://api.github.com/repos/$client_repo/releases/latest" | jq -r .tag_name)"
+        # resolve latest release via the release redirect, the github api is rate limited per ip
+        client_release="$(curl --silent -o /dev/null -w "%{redirect_url}" "https://github.com/$client_repo/releases/latest" | sed -E 's|^.*/tag/||')"
         echo "latest release: $client_release"
         if [ -z "$client_release" ]; then
           exit
@@ -71,8 +77,12 @@ jobs:
         target_image="${{ matrix.config.targetImage }}:$client_release"
         echo "check target image: $target_image"
         if ! [ -z "$(docker manifest inspect $target_image | grep "schemaVersion")" ]; then
-          echo "target image already exists!"
-          exit
+          if [ "${{ inputs.force }}" == "true" ]; then
+            echo "target image already exists, rebuilding anyway (force)"
+          else
+            echo "target image already exists!"
+            exit
+          fi
         fi
 
         echo "client_release=$(echo "$client_release")" >> $GITHUB_OUTPUT

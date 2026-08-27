@@ -1,6 +1,7 @@
 #!/bin/sh
 
 ephemery_repo="ephemery-testnet/ephemery-genesis"
+ephemery_fallback_url="https://ephemery.dev/latest/retention.vars"
 testnet_dir=/ephemery_config
 
 ephemery_wrapper() {
@@ -115,6 +116,25 @@ stop_client() {
 }
 
 
+get_ephemery_release() {
+  # resolve the latest genesis release without the github api, which is rate limited per ip
+  # 1. follow the redirect of the github "latest release" web endpoint
+  release=$(curl -k --silent --connect-timeout 10 --max-time 30 -o /dev/null -w "%{redirect_url}" \
+    "https://github.com/$ephemery_repo/releases/latest" |
+    sed -E 's|^.*/tag/||')
+
+  if [ -z "$release" ]; then
+    # 2. fall back to the ITERATION_RELEASE entry of the ephemery.dev config mirror
+    echo "[EphemeryWrapper] could not resolve latest release from github, trying $ephemery_fallback_url" >&2
+    release=$(curl -k --silent --connect-timeout 10 --max-time 30 "$ephemery_fallback_url" |
+      grep "ITERATION_RELEASE" |
+      sed -E 's/.*"([^"]+)".*/\1/' |
+      head -n 1)
+  fi
+
+  echo "$release"
+}
+
 ensure_latest_config() {
   if ! [ -d $testnet_dir ]; then
     mkdir -p $testnet_dir
@@ -132,23 +152,48 @@ ensure_latest_config() {
     fi
   fi
 
-  ephemery_release=$(curl -k --silent "https://api.github.com/repos/$ephemery_repo/releases/latest" |
-    grep '"tag_name":' |
-    sed -E 's/.*"([^"]+)".*/\1/' |
-    head -n 1)
-  
+  ephemery_release=$(get_ephemery_release)
+
   if [ -z "$ephemery_release" ]; then
-    echo "[EphemeryWrapper] could not get latest genesis release version."
+    # never drop a working config just because the release lookup failed
+    echo "[EphemeryWrapper] could not get latest genesis release version - keeping current config."
+    return
   fi
-  if [ ! -z "$stored_iteration" ] && [ "$stored_iteration" == "$ephemery_release" ]; then
+  if [ ! -z "$stored_iteration" ] && [ "$stored_iteration" = "$ephemery_release" ]; then
     echo "[EphemeryWrapper] cannot load new genesis release, iteration $stored_iteration is still the latest available genesis."
     return
   fi
 
-  echo "[EphemeryWrapper] downloading genesis release: $ephemery_release  https://github.com/$ephemery_repo/releases/download/$ephemery_release/testnet-all.tar.gz"
+  genesis_url="https://github.com/$ephemery_repo/releases/download/$ephemery_release/testnet-all.tar.gz"
+  echo "[EphemeryWrapper] downloading genesis release: $ephemery_release  $genesis_url"
 
+  # unpack to a staging dir first, only replace the current config once it's complete
+  download_dir="$testnet_dir/.download"
+  rm -rf $download_dir
+  mkdir -p $download_dir
+
+  if ! curl -k --silent -L --fail --connect-timeout 10 --max-time 600 \
+    -o $download_dir/testnet-all.tar.gz "$genesis_url"; then
+    echo "[EphemeryWrapper] failed to download genesis release $ephemery_release - keeping current config."
+    rm -rf $download_dir
+    return
+  fi
+  if ! tar xzf $download_dir/testnet-all.tar.gz -C $download_dir; then
+    echo "[EphemeryWrapper] failed to unpack genesis release $ephemery_release - keeping current config."
+    rm -rf $download_dir
+    return
+  fi
+  rm -f $download_dir/testnet-all.tar.gz
+  if [ ! -f $download_dir/retention.vars ]; then
+    echo "[EphemeryWrapper] genesis release $ephemery_release is incomplete (retention.vars missing) - keeping current config."
+    rm -rf $download_dir
+    return
+  fi
+
+  # the `*` glob does not match the dot-prefixed staging dir
   rm -rf $testnet_dir/*
-  curl -k --silent -L https://github.com/$ephemery_repo/releases/download/$ephemery_release/testnet-all.tar.gz | tar xz -C $testnet_dir
+  mv $download_dir/* $testnet_dir/
+  rm -rf $download_dir
 }
 
 ensure_clean_datadir() {
