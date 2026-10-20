@@ -1,7 +1,11 @@
-FROM thorax/erigon:v2.59.0
+FROM erigontech/erigon:v3.8.0
 
 USER root
-RUN apk add --no-cache curl bash && rm -rf /var/cache/apk/*
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  curl \
+  bash \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 RUN mkdir /ephemery_config && chmod 777 /ephemery_config
 
 WORKDIR /wrapper

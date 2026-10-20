@@ -1,4 +1,4 @@
-FROM prysmaticlabs/prysm-beacon-chain:v5.0.3
+FROM gcr.io/offchainlabs/prysm/beacon-chain:v7.3.0
 
 COPY wrapper /wrapper
 SHELL [ "/bin/bash", "-c" ]

@@ -53,43 +53,15 @@ jobs:
     
     - name: Check latest release
       id: check
-      run: |
-        client_repo="${{ matrix.config.repository }}"
+      env:
+        CLIENT_REPO: ${{ matrix.config.repository }}
+        SOURCE_IMAGE: ${{ matrix.config.sourceImage }}
+        SOURCE_IMAGE_PREFIX: ${{ matrix.config.sourceImagePrefix }}
+        TARGET_IMAGE: ${{ matrix.config.targetImage }}
+        FORCE: ${{ inputs.force }}
+        GITHUB_TOKEN: ${{ github.token }}
+      run: .github/scripts/check-release.sh
 
-        # resolve latest release via the release redirect, the github api is rate limited per ip
-        client_release="$(curl --silent -o /dev/null -w "%{redirect_url}" "https://github.com/$client_repo/releases/latest" | sed -E 's|^.*/tag/||')"
-        echo "latest release: $client_release"
-        if [ -z "$client_release" ]; then
-          exit
-        fi
-
-        source_tag="$client_release"
-        if [ ! -z "${{ matrix.config.sourceImagePrefix }}" ]; then
-          source_tag="${{ matrix.config.sourceImagePrefix }}$source_tag"
-        fi
-        source_image="${{ matrix.config.sourceImage }}:$source_tag"
-        echo "check source image: $source_image"
-        if [ -z "$(docker manifest inspect $source_image | grep "schemaVersion")" ]; then
-          echo "source image not found!"
-          exit
-        fi
-
-        target_image="${{ matrix.config.targetImage }}:$client_release"
-        echo "check target image: $target_image"
-        if ! [ -z "$(docker manifest inspect $target_image | grep "schemaVersion")" ]; then
-          if [ "${{ inputs.force }}" == "true" ]; then
-            echo "target image already exists, rebuilding anyway (force)"
-          else
-            echo "target image already exists!"
-            exit
-          fi
-        fi
-
-        echo "client_release=$(echo "$client_release")" >> $GITHUB_OUTPUT
-        echo "source_image=$(echo "$source_image")" >> $GITHUB_OUTPUT
-        echo "target_image=$(echo "$target_image")" >> $GITHUB_OUTPUT
-        echo "need_build=true" >> $GITHUB_OUTPUT
-    
     - name: Setup cross build dependencies
       if: ${{ steps.check.outputs.need_build == 'true' }}
       run: |

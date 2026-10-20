@@ -49,46 +49,16 @@ jobs:
         echo "platform=$(echo "$client_config" | jq -r ".platform")" >> $GITHUB_OUTPUT
     - name: Check latest release
       id: check
-      run: |
-        client_repo="${{ steps.client.outputs.repository }}"
+      env:
+        CLIENT_REPO: ${{ steps.client.outputs.repository }}
+        SOURCE_IMAGE: ${{ steps.client.outputs.sourceImage }}
+        SOURCE_IMAGE_PREFIX: ${{ steps.client.outputs.sourceImagePrefix }}
+        TARGET_IMAGE: ${{ steps.client.outputs.targetImage }}
+        CLIENT_VERSION: ${{ inputs.version }}
+        FORCE: ${{ inputs.force }}
+        GITHUB_TOKEN: ${{ github.token }}
+      run: .github/scripts/check-release.sh
 
-        client_release="${{ inputs.version }}"
-        if [ -z "$client_release" ]; then
-          # resolve latest release via the release redirect, the github api is rate limited per ip
-          client_release="$(curl --silent -o /dev/null -w "%{redirect_url}" "https://github.com/$client_repo/releases/latest" | sed -E 's|^.*/tag/||')"
-        fi
-        echo "latest release: $client_release"
-        if [ -z "$client_release" ]; then
-          exit
-        fi
-
-        source_tag="$client_release"
-        if [ ! -z "${{ steps.client.outputs.sourceImagePrefix }}" ]; then
-          source_tag="${{ steps.client.outputs.sourceImagePrefix }}$source_tag"
-        fi
-        source_image="${{ steps.client.outputs.sourceImage }}:$source_tag"
-        echo "check source image: $source_image"
-        if [ -z "$(docker manifest inspect $source_image | grep "schemaVersion")" ]; then
-          echo "source image not found!"
-          exit
-        fi
-
-        target_image="${{ steps.client.outputs.targetImage }}:$client_release"
-        echo "check target image: $target_image"
-        if ! [ -z "$(docker manifest inspect $target_image | grep "schemaVersion")" ]; then
-          if [ "${{ inputs.force }}" == "true" ]; then
-            echo "target image already exists, rebuilding anyway (force)"
-          else
-            echo "target image already exists!"
-            exit
-          fi
-        fi
-
-        echo "client_release=$(echo "$client_release")" >> $GITHUB_OUTPUT
-        echo "source_image=$(echo "$source_image")" >> $GITHUB_OUTPUT
-        echo "target_image=$(echo "$target_image")" >> $GITHUB_OUTPUT
-        echo "need_build=true" >> $GITHUB_OUTPUT
-    
     - name: Setup cross build dependencies
       if: ${{ steps.check.outputs.need_build == 'true' }}
       run: |

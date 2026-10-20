@@ -1,4 +1,4 @@
-FROM consensys/teku:latest
+FROM consensys/teku:26.10.1
 
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends \
