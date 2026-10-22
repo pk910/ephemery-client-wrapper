@@ -20,16 +20,26 @@ source /wrapper/wrapper.lib.sh
 start_client() {
     source $testnet_dir/nodevars_env.txt
 
+    # reth requires a subcommand, default to "node" when only options were given
+    reth_cmd=()
+    if [ ${#client_args[@]} -eq 0 ] || [[ "${client_args[0]}" == -* ]]; then
+        reth_cmd=(node)
+    fi
+
     ephemery_args=""
     if [ -z "$(echo "${client_args[@]}" | grep "chain")" ]; then
         ephemery_args="$ephemery_args --chain=$testnet_dir/genesis.json"
     fi
-    if [ -z "$(echo "${client_args[@]}" | grep "bootnodes")" ]; then
-        ephemery_args="$ephemery_args --bootnodes=$BOOTNODE_ENODE_LIST"
-    fi
+    case "${reth_cmd[0]:-${client_args[0]}}" in
+        node)
+            if [ -z "$(echo "${client_args[@]}" | grep "bootnodes")" ]; then
+                ephemery_args="$ephemery_args --bootnodes=$BOOTNODE_ENODE_LIST"
+            fi
+            ;;
+    esac
 
-    echo "args: ${client_args[@]} $ephemery_args"
-    /usr/local/bin/reth "${client_args[@]}" $ephemery_args
+    echo "args: ${reth_cmd[@]} ${client_args[@]} $ephemery_args"
+    /usr/local/bin/reth "${reth_cmd[@]}" "${client_args[@]}" $ephemery_args
 }
 
 ephemery_wrapper "reth" "$client_datadir" "" "start_client"

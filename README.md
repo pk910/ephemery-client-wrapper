@@ -80,7 +80,7 @@ docker run --pull always -v $(pwd)/jwtsecret:/execution-auth.jwt:ro -v $(pwd)/el
 
 **Lighthouse**:
 ```
-docker run --pull always -v $(pwd)/jwtsecret:/execution-auth.jwt:ro -v $(pwd)/cl:/data -p 9000:9000 -p 5052:5052 -it pk910/ephemery-lighthouse lighthouse bn --datadir=/data --http --http-address=0.0.0.0 --http-port=5052 --execution-endpoint=http://172.17.0.1:8551 --execution-jwt=/execution-auth.jwt
+docker run --pull always -v $(pwd)/jwtsecret:/execution-auth.jwt:ro -v $(pwd)/cl:/data -p 9000:9000 -p 5052:5052 -it pk910/ephemery-lighthouse lighthouse bn --datadir=/data --http --http-address=0.0.0.0 --http-port=5052 --execution-endpoint=http://172.17.0.1:8551 --execution-jwt=/execution-auth.jwt --allow-insecure-genesis-sync --ignore-ws-check
 ```
 
 **Lodestar**:

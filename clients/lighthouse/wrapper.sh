@@ -36,7 +36,7 @@ start_client() {
         ephemery_args="$ephemery_args --testnet-dir=$testnet_dir"
     fi
     
-    case "$(echo "$client_args[0]")" in
+    case "${client_args[0]}" in
         b|bn|beacon|beacon_node)
             if [ -z "$(echo "${client_args[@]}" | grep "boot-nodes")" ]; then
                 ephemery_args="$ephemery_args --boot-nodes=$BOOTNODE_ENR_LIST"
