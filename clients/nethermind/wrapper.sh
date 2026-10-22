@@ -22,7 +22,12 @@ start_client() {
 
     ephemery_args=""
     if [ -z "$(echo "${client_args[@]}" | grep "Init.ChainSpecPath")" ]; then
-        ephemery_args="$ephemery_args --Init.ChainSpecPath=$testnet_dir/chainspec.json"
+        # genesis releases since iteration 165 ship only the standard genesis.json (nethermind reads the geth format)
+        if [ -f "$testnet_dir/chainspec.json" ]; then
+            ephemery_args="$ephemery_args --Init.ChainSpecPath=$testnet_dir/chainspec.json"
+        else
+            ephemery_args="$ephemery_args --Init.ChainSpecPath=$testnet_dir/genesis.json"
+        fi
     fi
     if [ -z "$(echo "${client_args[@]}" | grep "Init.GenesisHash")" ]; then
         ephemery_args="$ephemery_args --Init.GenesisHash=$GENESIS_BLOCK"

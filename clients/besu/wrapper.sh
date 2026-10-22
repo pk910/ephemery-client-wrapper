@@ -22,7 +22,12 @@ start_client() {
 
     ephemery_args=""
     if [ -z "$(echo "${client_args[@]}" | grep "genesis-file")" ]; then
-        ephemery_args="$ephemery_args --genesis-file=$testnet_dir/besu.json"
+        # genesis releases since iteration 165 ship only the standard genesis.json (besu reads the geth format)
+        if [ -f "$testnet_dir/besu.json" ]; then
+            ephemery_args="$ephemery_args --genesis-file=$testnet_dir/besu.json"
+        else
+            ephemery_args="$ephemery_args --genesis-file=$testnet_dir/genesis.json"
+        fi
     fi
     if [ -z "$(echo "${client_args[@]}" | grep "bootnodes")" ]; then
         ephemery_args="$ephemery_args --bootnodes=$BOOTNODE_ENODE_LIST"
